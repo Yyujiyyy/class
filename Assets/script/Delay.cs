@@ -103,7 +103,7 @@ public class Delay : MonoBehaviour
         }
 
         isJumping = !grounded;
-        Debug.Log("Ground check: " + grounded);
+        //Debug.Log("Ground check: " + grounded);
     }
 
     IEnumerator DelayMove(Vector3 dir)
