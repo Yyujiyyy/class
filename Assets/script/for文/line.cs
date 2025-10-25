@@ -2,37 +2,39 @@
 
 public class line : MonoBehaviour
 {
-    Transform T;
-
     [SerializeField] GameObject[] Box;   //cube
 
-    float timer;                        //線
-    float interval = 0.1f;
-    [SerializeField] float Maxrow = 9;
-    int Counter = 0;
-    int lineCounter = 0;
+    private float timer;                        //線
+    private float interval = 0.1f;
+    [SerializeField] private float Maxrow = 9;
+    private int Counter = 0;
+    private int lineCounter = 0;
 
-    float timer2;
-    int PlaneCounter = 0;               //平面
-    [SerializeField] int Maxrowline = 9;
-    int number = 0;
+    private float timer2;
+    private int PlaneCounter = 0;               //平面
+    [SerializeField] private int Maxrowline = 9;
+    private int number = 0;
 
-    float timer3;
-    int independentnumber = 0;          //上面だけが開いている箱
-    int BoxX, BoxY, BoxZ;
-    int MaxBox = 8;
-    bool X;
-    bool S;
-    bool Flont;
+    private float timer3;
+    private int independentnumber = 0;          //上面だけが開いている箱
+    private int BoxX, BoxY, BoxZ;
+    private int MaxBox = 9;
+    private bool X;
+    private bool S;
+    private bool Height;
+    private int flontX, flontY;
+    private bool behind;
+
+
+
 
     // Start is called before the first frame update
     void Start()
     {
-        T = transform;
-
         PlaneCounter = 20;      //ずらして視認する
 
-        Flont = true;
+        Height = true;
+        behind = false;
     }
 
     // Update is called once per frame
@@ -62,12 +64,12 @@ public class line : MonoBehaviour
 
     void rowline()
     {
-        if (interval <= timer && PlaneCounter < Maxrowline + 20 && lineCounter < /*列の最大数*/Maxrowline)
+        if (interval <= timer2 && PlaneCounter < Maxrowline + 20 && lineCounter < /*列の最大数*/Maxrowline)
         {
             Instantiate(Box[number % Box.Length], new Vector3(PlaneCounter, 0, lineCounter), Quaternion.identity);
 
             PlaneCounter++; number++;
-            timer = 0;
+            timer2 = 0;
             //Debug.Log(PlaneCounter);
         }
         else if (Maxrowline + 20 <= PlaneCounter)       //列操作
@@ -83,41 +85,45 @@ public class line : MonoBehaviour
     //===============================================================
     //                    上面だけが開いている箱
     //===============================================================
+    
 
     void OpenBox()
     {
         int num;                            //条件
 
+
         //前
 
-        if (interval <= timer && BoxY < MaxBox && Flont)
+        if (MaxBox - 1 <= flontX && MaxBox <= flontY && Height && !behind)   //強制停止のための条件
         {
-            num = BoxY++;           //条件更新
-
-            Instant();
-            return;
-        }
-        else if (MaxBox <= BoxY)
-        {
-            BoxX++;
-            BoxY = 0;
-            return;
+            Height = false;
+            flontX = 0; flontY = 0;         //初期化
+            BoxZ++;
+            BoxY = 1;
+            BoxX = 0;
+            X = true;                                       //横に移行
         }
 
-        if (MaxBox <= BoxX && MaxBox <= BoxY)
+        else if (interval <= timer3 && flontY < MaxBox && Height)
         {
-            Flont = false;
-            //X = true;
-            return;
+            num = flontY++;           //条件更新
+
+            FlontInstant();
         }
+        else if (MaxBox <= flontY && Height)
+        {
+            flontX++;
+            flontY = 0;
+        }
+        
 
-
+        //---------------------------------------------
         //横
 
-        if (MaxBox - 1 <= BoxY && MaxBox <= BoxX && BoxZ < MaxBox && !Flont)       //このif文は先に書かないといけない。
+        if (MaxBox <= BoxY && MaxBox <= BoxX && BoxZ < MaxBox && !Height)       //このif文は先に書かないといけない。
         {                                           //これをelse ifに持ってくると、他の条件もtrueになってしまうため。
             BoxZ++;                                 //絶対にかぶらない物を先に持ってくると条件のかぶりをなくせる。
-            BoxY = 0;
+            BoxY = 1;
             BoxX = 0;               //Zのみを++してX,Yを初期化
             Debug.Log("c");
             X = true;               //この条件を満たすif文は後に書かないと反映されない。
@@ -126,21 +132,21 @@ public class line : MonoBehaviour
             //Debug.Log(BoxY);
             //Debug.Log(BoxZ);
         }
-        else if (MaxBox <= BoxY)   //１回のみ実行され、条件を変える
+        else if (MaxBox - 1 < BoxY)   //１回のみ実行され、条件を変える
         {
             X = false;              //stop
-            BoxY = 0;               //reset
+            BoxY = 1;               //reset
             S = true;               //start
             Debug.Log("change");
         }
-        else if (interval <= timer && BoxX < MaxBox && S)                         //MaxBoxまで繰り返し実行（X）
+        else if (interval <= timer3 && BoxX < MaxBox - 1 && S)                         //MaxBoxまで繰り返し実行（X）
         {
             num = BoxX++;           //reroad
 
             Instant();                                  //Yを0に戻さないといけないので処理を分ける
             //Debug.Log("s");
         }
-        else if (interval <= timer && MaxBox <= BoxX && BoxY < MaxBox - 1)
+        else if (interval <= timer3 && MaxBox <= BoxX && BoxY < MaxBox && !behind)
         {
             S = false;
             num = BoxY++;           //reroad
@@ -150,22 +156,42 @@ public class line : MonoBehaviour
             Debug.Log("b");
         }
 
-        if (interval <= timer && BoxY < MaxBox && X)
+        if (interval <= timer3 && BoxY <= MaxBox && X)
         {
             Instant();
 
             num = BoxY++;       //後から条件追加することで、(0,0,0)から始める
         }
 
-        void Instant()
+        //-------------------------------------------
+        //後
+
+        if(MaxBox <= BoxZ && !behind)
         {
-            Instantiate(Box[independentnumber % Box.Length], new Vector3(BoxX + 40, BoxY, BoxZ), Quaternion.identity);
-
-            independentnumber++;        //どんな場合でも++;
-
-            timer = 0;
-            timer2 = 0;
-            timer3 = 0;
+            Height = true;
+            behind = true;
         }
+    }
+
+    void Instant()
+    {
+        Instantiate(Box[independentnumber % Box.Length], new Vector3(BoxX + 40, BoxY, BoxZ), Quaternion.identity);
+
+        independentnumber++;        //どんな場合でも++;
+
+        timer = 0;
+        timer2 = 0;
+        timer3 = 0;
+    }
+
+    void FlontInstant()
+    {
+        Instantiate(Box[independentnumber % Box.Length], new Vector3(flontX + 40, flontY, BoxZ ), Quaternion.identity);
+
+        independentnumber++;        //どんな場合でも++;
+
+        timer = 0;
+        timer2 = 0;
+        timer3 = 0;
     }
 }
