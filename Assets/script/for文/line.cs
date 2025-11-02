@@ -94,14 +94,18 @@ public class line : MonoBehaviour
 
         //前
 
-        if (MaxBox - 1 <= flontX && MaxBox <= flontY && Height && !behind)   //強制停止のための条件
+        if (MaxBox - 1 <= flontX && MaxBox <= flontY && Height)   //強制停止のための条件
         {
             Height = false;
             flontX = 0; flontY = 0;         //初期化
-            BoxZ++;
-            BoxY = 1;
-            BoxX = 0;
-            X = true;                                       //横に移行
+
+            if(!behind)
+            {
+                BoxZ++;
+                BoxY = 1;
+                BoxX = 0;
+                X = true;                   //横に移行
+            }
         }
 
         else if (interval <= timer3 && flontY < MaxBox && Height)
@@ -156,8 +160,8 @@ public class line : MonoBehaviour
             Debug.Log("b");
         }
 
-        if (interval <= timer3 && BoxY <= MaxBox && X)
-        {
+        if (interval <= timer3 && BoxY <= MaxBox + 1 && X)  //最初は+1回
+        {                                                   //X以降は生のままの数でないと
             Instant();
 
             num = BoxY++;       //後から条件追加することで、(0,0,0)から始める
@@ -168,8 +172,8 @@ public class line : MonoBehaviour
 
         if(MaxBox <= BoxZ && !behind)
         {
-            Height = true;
             behind = true;
+            Height = true;
         }
     }
 
