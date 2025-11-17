@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using TreeEditor;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Manager : MonoBehaviour
@@ -9,25 +9,28 @@ public class Manager : MonoBehaviour
     [SerializeField] GameObject _bullet;
     [SerializeField] GameObject _enemy;
 
-    List<GameObject> Bullets = new List<GameObject>();
-    List<GameObject> Enemys = new List<GameObject>();
+    public List<GameObject> Bullets = new List<GameObject>();
 
-    float halfw;
-    float halfh;
+    MeshRenderer mr;
+
+    [NonSerialized] public float halfw;
+    [NonSerialized] public float halfh;
 
     float timer;
 
     float speed = 10f;
+    Vector3 min, max;
 
     void Start()
     {
         _camera = Camera.main;
+        mr = _player.GetComponent<MeshRenderer>();
 
         //幅と高さを取得している
-        //halfw = 
-        //halfh = 
+        halfw = mr.bounds.extents.x;
+        halfh = mr.bounds.extents.y;
 
-        for(int i = 0; i < 20; i++)
+        for (int i = 0; i < 20; i++)
         {
             GameObject obj = Instantiate(_bullet, _player.position, Quaternion.identity);
             obj.SetActive(false);
@@ -58,11 +61,12 @@ public class Manager : MonoBehaviour
         {
             _player.position -= _player.right * Time.deltaTime * speed;
         }
+
         Clamp();
-        
-        if (Input.GetMouseButton(0) && 1 <= timer)
+
+        if (Input.GetMouseButton(0) && 0.5f <= timer)
         {
-            foreach(GameObject bullet in Bullets)
+            foreach (GameObject bullet in Bullets)
             {
                 if (!bullet.activeInHierarchy)
                 {
@@ -71,37 +75,43 @@ public class Manager : MonoBehaviour
 
                     timer = 0;
                     //全弾発生するのを防ぐ
+
+                    //Debug.Log("tama");
                     break;
                 }
             }
-            Debug.Log("tama");
         }
 
         foreach (GameObject bullet in Bullets)
-        {
+        {   //Activeのもののみ
             if (bullet.activeInHierarchy)
             {
                 bullet.transform.position += Vector3.right * Time.deltaTime * speed;
+
+                if (max.x <= bullet.transform.position.x)
+                {
+                    bullet.SetActive(false);
+                }
             }
         }
-
         //bullet不足の場合
-        //どこかでSetActive(false)にする処理
     }
-
+    /// <summary>
+    /// プレイヤーの動く範囲を画面内に制限
+    /// </summary>
     void Clamp()
     {
-        Vector3 min = _camera.ViewportToWorldPoint(new Vector3(0, 0, _camera.nearClipPlane));
-        Vector3 max = _camera.ViewportToWorldPoint(new Vector3(1, 1, _camera.nearClipPlane));
+        min = _camera.ViewportToWorldPoint(new Vector3(0, 0, _camera.nearClipPlane));
+        max = _camera.ViewportToWorldPoint(new Vector3(1, 1, _camera.nearClipPlane));
         //nearClipPlaneとは、カメラが「どこから」描画を開始するかを決める距離
         //ViewportToWorldPointは０１で画面内の位置を表せる
 
         Vector3 pos = _player.position;
-        pos.x = Mathf.Clamp(_player.position.x, min.x + halfw * 2, max.x - halfw * 2);
-        pos.y = Mathf.Clamp(_player.position.y, min.y + halfh * 2, max.y - halfh * 2);
+        pos.x = Mathf.Clamp(_player.position.x, min.x + halfw, max.x - halfw);
+        pos.y = Mathf.Clamp(_player.position.y, min.y + halfh, max.y - halfh);
         //Debug.DrawLine(min, max);
         //Debug.Log(min);
         //Debug.Log(max);
-        _player.position =  pos;
+        _player.position = pos;
     }
 }
