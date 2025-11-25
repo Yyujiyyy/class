@@ -9,11 +9,10 @@ public class Jump : MonoBehaviour
     private Vector3 direction, position;
     // Rayの長さ
     [SerializeField] float distance = 0.35f;
-    /*
-    Boolで返す。
-    Rayの範囲にgroundLayersで指定したレイヤーが存在するかどうか
-    */
 
+    ///<summary>
+    ///Rayの範囲にgroundLayersで指定したレイヤーが存在するかどうかをBoolで返す。
+    /// </summary>
     public bool CheckGroundStatus()
     {
         direction = Vector3.down;
