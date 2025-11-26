@@ -1,112 +1,106 @@
-﻿//using System.Collections;
-//using Unity.VisualScripting;
-//using UnityEngine;
+﻿using System.Collections;
+using Unity.VisualScripting;
+using UnityEngine;
 
-//public class PlayerControl : MonoBehaviour
-//{
-//    Transform _T;
-//    Vector3 moveDir;
-//    Vector3 Wv, Av, Sv, Dv;
+public class PlayerControl : MonoBehaviour
+{
+    Transform _T;
+    Vector3 moveDir;
+    Vector3 Wv, Av, Sv, Dv;
 
-//    bool isJumping = false;
-//    [Tooltip("ジャンプの強さ")] Vector3 JumpF;
-//    Rigidbody _rb;
+    bool isJumping = false;
+    [Tooltip("ジャンプの強さ")] Vector3 JumpF;
+    Rigidbody _rb;
 
-//    [SerializeField] GameObject _foot;
-//    public Jump Jump;
+    [SerializeField] GameObject _foot;
+    public Jump Jump;
 
-//    // Start is called before the first frame update
-//    void Start()
-//    {
-//        _T = transform;
+    // Start is called before the first frame update
+    void Start()
+    {
+        _T = transform;
 
-//        Wv = new Vector3(0.1f, 0, 0);
-//        Sv = new Vector3(-0.1f, 0, 0);
-//        Av = new Vector3(0, 0, -0.1f);
-//        Dv = new Vector3(0, 0, 0.1f);
+        Wv = new Vector3(0.1f, 0, 0);
+        Sv = new Vector3(-0.1f, 0, 0);
+        Av = new Vector3(0, 0, -0.1f);
+        Dv = new Vector3(0, 0, 0.1f);
 
-//        JumpF = new Vector3(0, 5, 0);
-//        _rb = GetComponent<Rigidbody>();
-//    }
+        JumpF = new Vector3(0, 5, 0);
+        _rb = GetComponent<Rigidbody>();
+    }
 
-//    private IEnumerator DelayCoroutine()
-//    {
-//        yield return new WaitForSeconds(1);
+    private IEnumerator DelayCoroutine()
+    {
+        yield return new WaitForSeconds(1);
 
-//        Move();
-//        Jumping();
-//    }
+        Move();
+        Jumping();
+    }
 
-//    // Update is called once per frame
-//    void Update()
-//    {
-//        Move();
+    // Update is called once per frame
+    void Update()
+    {
+        Move();
 
-//        Jumping();
-//    }
+        Jumping();
+    }
 
+    void Jumping()
+    {
+        //Jump
+        //Debug.Log(isJumping);
+        if (!isJumping)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                _rb.AddForce(JumpF, ForceMode.Impulse);
+                isJumping = true;
 
-//    private void Ground()
-//    {
-//        if (Jump.CheckGroundStatus())
-//        {
-//            isJumping = false;
-//        }
-//        else
-//        {
-//            isJumping = true;
-//        }
-//    }
+                Debug.Log("jump");
+            }
+        }
 
-//    void Jumping()
-//    {
-//        //Jump
-//        //Debug.Log(isJumping);
-//        if (!isJumping)
-//        {
-//            if (Input.GetKeyDown(KeyCode.Space))
-//            {
-//                _rb.AddForce(JumpF, ForceMode.Impulse);
-//                isJumping = true;
+        if (Jump.CheckGroundStatus())
+        {
+            isJumping = false;
+        }
+        else
+        {
+            isJumping = true;
+        }
+    }
 
-//                Debug.Log("jump");
-//            }
-//        }
+    void Move()
+    {
+        moveDir = Vector3.zero;     //向き
 
-//        Ground();
-//    }
+        //移動
 
-//    void Move()
-//    {
-//        moveDir = Vector3.zero;     //向き
+        if (Input.GetKey(KeyCode.W))
+        {
+            moveDir += Wv;
+        }
 
-//        //移動
+        if (Input.GetKey(KeyCode.S))
+        {
+            moveDir += Sv;
+        }
 
-//        if (Input.GetKey(KeyCode.W))
-//        {
-//            moveDir += Wv;
-//        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            moveDir += Av;
+        }
 
-//        if (Input.GetKey(KeyCode.S))
-//        {
-//            moveDir += Sv;
-//        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            moveDir += Dv;
+        }
 
-//        if (Input.GetKey(KeyCode.A))
-//        {
-//            moveDir += Av;
-//        }   
+        if (moveDir != Vector3.zero)     //向きが違うとき
+        {
+            _T.rotation = Quaternion.LookRotation(moveDir);
 
-//        if (Input.GetKey(KeyCode.D))
-//        {
-//            moveDir += Dv;
-//        }
-
-//        if (moveDir != Vector3.zero)     //向きが違うとき
-//        {
-//            _T.rotation = Quaternion.LookRotation(moveDir);
-
-//            _T.position += moveDir * 0.1f;
-//        }
-//    }
-//}
+            _T.position += moveDir * 0.1f;
+        }
+    }
+}
