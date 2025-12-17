@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Manager : MonoBehaviour
 {
+    private InputAction attackAction;
+    [SerializeField] private GameObject _title;
+    private bool attackPressed;
+
     [SerializeField] Transform _player;
     Camera _camera;
     [SerializeField] GameObject _bullet;
@@ -21,6 +26,32 @@ public class Manager : MonoBehaviour
     float speed = 10f;
     Vector3 min, max;
 
+    void OnEnable()
+    {
+        attackAction = InputSystem.actions.FindAction("Attack");
+        attackAction.Enable();
+
+        attackAction.performed += OnAttack;
+        attackAction.canceled += Gandhi;
+    }
+
+    void OnDisable()
+    {
+        attackAction.performed -= OnAttack;
+        attackAction.canceled -= Gandhi;
+        attackAction.Disable();
+    }
+
+    private void OnAttack(InputAction.CallbackContext ctx)
+    {
+        attackPressed = true;
+    }
+
+    private void Gandhi(InputAction.CallbackContext ctx)
+    {
+        attackPressed = false;
+    }
+
     void Start()
     {
         _camera = Camera.main;
@@ -36,35 +67,37 @@ public class Manager : MonoBehaviour
             obj.SetActive(false);
             Bullets.Add(obj);
         }
+
+        attackPressed = false;
     }
 
     void Update()
     {
         timer += Time.deltaTime;
 
-        if (Input.GetKey(KeyCode.W))
-        {
-            _player.position += _player.up * Time.deltaTime * speed;
-        }
+        //if (Input.GetKey(KeyCode.W))
+        //{
+        //    _player.position += _player.up * Time.deltaTime * speed;
+        //}
 
-        if (Input.GetKey(KeyCode.S))
-        {
-            _player.position -= _player.up * Time.deltaTime * speed;
-        }
+        //if (Input.GetKey(KeyCode.S))
+        //{
+        //    _player.position -= _player.up * Time.deltaTime * speed;
+        //}
 
-        if (Input.GetKey(KeyCode.D))
-        {
-            _player.position += _player.right * Time.deltaTime * speed;
-        }
+        //if (Input.GetKey(KeyCode.D))
+        //{
+        //    _player.position += _player.right * Time.deltaTime * speed;
+        //}
 
-        if (Input.GetKey(KeyCode.A))
-        {
-            _player.position -= _player.right * Time.deltaTime * speed;
-        }
+        //if (Input.GetKey(KeyCode.A))
+        //{
+        //    _player.position -= _player.right * Time.deltaTime * speed;
+        //}
 
         Clamp();
 
-        if (Input.GetMouseButton(0) && 0.5f <= timer)
+        if (attackPressed && 0.5f <= timer)
         {
             foreach (GameObject bullet in Bullets)
             {

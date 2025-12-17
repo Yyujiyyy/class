@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -24,6 +22,9 @@ public class Enemy : MonoBehaviour
     bool _pActive;
 
     const string _methodName = "PlayerActive";
+
+    // パーティクル
+    [SerializeField] private ParticleSystem _deathParticle;
 
     // Start is called before the first frame update
     void Start()
@@ -84,7 +85,7 @@ public class Enemy : MonoBehaviour
     void DEnemyBullet()
     {
         //軽量化
-        if (0.1f <= timer2)
+        if (0.05f <= timer2)
         {
             foreach (GameObject enemy in Enemys)
             {   //SetActive(true)のenemyのみを判定
@@ -107,6 +108,8 @@ public class Enemy : MonoBehaviour
                             //Debug.Log("ほら");
                             enemy.SetActive(false);
                             bullets.SetActive(false);
+                            _deathParticle.transform.position = enemyPos;
+                            _deathParticle.Play();
                         }
                     }
                 }
@@ -128,7 +131,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void PlayerActive()
+    public void PlayerActive()
     {
         _playerT.position = new Vector3(-7, 0, 0);
         _player.SetActive(true);
