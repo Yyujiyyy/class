@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -23,8 +24,21 @@ public class Enemy : MonoBehaviour
 
     const string _methodName = "PlayerActive";
 
-    // パーティクル
+    [Header("パーティクル")]
     [SerializeField] private ParticleSystem _deathParticle;
+    [SerializeField] private ParticleSystem _pDeathParticle;
+
+    [Header("SE")]
+    public int changeA = 0;
+    public int changeD = 0;
+
+    [Header("Score")]
+    [NonSerialized] public int _score = 0;
+    [NonSerialized] public int _highScore = 0;
+
+    [SerializeField] private GameObject _title;
+    bool _isCleared = false;
+
 
     // Start is called before the first frame update
     void Start()
@@ -65,17 +79,34 @@ public class Enemy : MonoBehaviour
                 {
                     Enemys[i].SetActive(true);
                     Enemys[i].transform.position = _playerT.position + new Vector3(10, 0, 0);
+                    changeA = 4;
                     break;
                 }
+                else
+                    changeA = 0;
+
             }
             timer = 0;
         }
         DEnemyBullet();
 
+        // 
         if(!_player.activeSelf && _pActive)
         {
             _pActive = false;
             Invoke(_methodName, 2);
+        }
+
+        // タイトルが出現時のリセット
+        if (_title.activeSelf && !_isCleared)
+        {
+            AllDeactivate();
+            _isCleared = true;
+        }
+
+        if (!_title.activeSelf)
+        {
+            _isCleared = false;
         }
     }
     /// <summary>
@@ -87,7 +118,7 @@ public class Enemy : MonoBehaviour
         //軽量化
         if (0.05f <= timer2)
         {
-            foreach (GameObject enemy in Enemys)
+            foreach ( GameObject enemy in Enemys)
             {   //SetActive(true)のenemyのみを判定
                 if (!enemy.activeSelf) continue;
 
@@ -105,24 +136,39 @@ public class Enemy : MonoBehaviour
                     {
                         if (enemyPos.y - halfh <= bulletPos.y && bulletPos.y <= enemyPos.y + halfh)
                         {//enemyの判定は忠実に、弾の判定は、中心が当たったら
-                            //Debug.Log("ほら");
+
                             enemy.SetActive(false);
+                            // enemy破壊時のScore加算
+                            _score += 100;
+                            // ハイスコア更新
+                            if (_highScore < _score)
+                            {
+                                _highScore = _score;
+                            }
+                            
                             bullets.SetActive(false);
-                            _deathParticle.transform.position = enemyPos;
-                            _deathParticle.Play();
+                            Instantiate(_deathParticle, enemyPos, Quaternion.identity);
+                            // enemy死亡時の音に変更
+                            changeD = 2;
                         }
+                        else
+                            changeD = 0;
                     }
+                    else
+                        changeD = 0;
+                    // それ以外はずっと0
                 }
 
+                // playerがenemyに当たったら死亡
                 if(_player.activeSelf)
                 {
                     if (enemyPos.x - halfw <= _playerT.position.x && _playerT.position.x <= enemyPos.x + halfw)
                     {
                         if (enemyPos.y - halfh <= _playerT.position.y && _playerT.position.y <= enemyPos.y + halfh)
                         {//enemyの判定は忠実に、playerの判定は、中心が当たったら
-                            //Debug.Log("ほら");
                             enemy.SetActive(false);
                             _player.SetActive(false);
+                            Instantiate(_pDeathParticle, _playerT.position, Quaternion.identity);
                         }
                     }
                 }
@@ -130,11 +176,24 @@ public class Enemy : MonoBehaviour
             timer2 = 0;
         }
     }
-
+    /// <summary>
+    /// プレイヤーの復活
+    /// </summary>
     public void PlayerActive()
     {
         _playerT.position = new Vector3(-7, 0, 0);
         _player.SetActive(true);
         _pActive = true;
+    }
+
+    void AllDeactivate()
+    {
+        foreach (var enemy in Enemys)
+            enemy.SetActive(false);
+
+        foreach (var bullet in manager.Bullets)
+            bullet.SetActive(false);
+
+        _score = 0;
     }
 }
