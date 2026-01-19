@@ -26,6 +26,9 @@ public class Manager : MonoBehaviour
     float speed = 10f;
     Vector3 min, max;
 
+    [Header("SE")]
+    public int change;
+
     void OnEnable()
     {
         attackAction = InputSystem.actions.FindAction("Attack");
@@ -50,6 +53,7 @@ public class Manager : MonoBehaviour
     private void Gandhi(InputAction.CallbackContext ctx)
     {
         attackPressed = false;
+        change = 0;
     }
 
     void Start()
@@ -61,6 +65,7 @@ public class Manager : MonoBehaviour
         halfw = mr.bounds.extents.x;
         halfh = mr.bounds.extents.y;
 
+        // オブジェクトプール
         for (int i = 0; i < 20; i++)
         {
             GameObject obj = Instantiate(_bullet, _player.position, Quaternion.identity);
@@ -75,28 +80,9 @@ public class Manager : MonoBehaviour
     {
         timer += Time.deltaTime;
 
-        //if (Input.GetKey(KeyCode.W))
-        //{
-        //    _player.position += _player.up * Time.deltaTime * speed;
-        //}
-
-        //if (Input.GetKey(KeyCode.S))
-        //{
-        //    _player.position -= _player.up * Time.deltaTime * speed;
-        //}
-
-        //if (Input.GetKey(KeyCode.D))
-        //{
-        //    _player.position += _player.right * Time.deltaTime * speed;
-        //}
-
-        //if (Input.GetKey(KeyCode.A))
-        //{
-        //    _player.position -= _player.right * Time.deltaTime * speed;
-        //}
-
         Clamp();
 
+        // bulletの発射
         if (attackPressed && 0.5f <= timer)
         {
             foreach (GameObject bullet in Bullets)
@@ -104,6 +90,7 @@ public class Manager : MonoBehaviour
                 if (!bullet.activeInHierarchy)
                 {
                     bullet.SetActive(true);
+                    change = 3;
                     bullet.transform.position = _player.position;
 
                     timer = 0;
@@ -115,6 +102,7 @@ public class Manager : MonoBehaviour
             }
         }
 
+        // 画面外に弾がでたら消去
         foreach (GameObject bullet in Bullets)
         {   //Activeのもののみ
             if (bullet.activeInHierarchy)
@@ -127,7 +115,7 @@ public class Manager : MonoBehaviour
                 }
             }
         }
-        //bullet不足の場合
+        //bullet不足の場合は弾の連射を制限してるので考える必要はない
     }
     /// <summary>
     /// プレイヤーの動く範囲を画面内に制限
